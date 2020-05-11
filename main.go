@@ -10,6 +10,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/shomali11/slacker"
+	"github.com/slack-go/slack"
 )
 
 func goDotEnvVariable(key string) string {
@@ -28,12 +29,18 @@ func randomAC(min, max int) int {
 func main() {
 	bot := slacker.NewClient(goDotEnvVariable("API_TOKEN"), slacker.WithDebug(true))
 
+	// daily := &slacker.Event
+
 	definition := &slacker.CommandDefinition{
 		Handler: func(request slacker.Request, response slacker.ResponseWriter) {
 			rand.Seed(time.Now().UnixNano())
+			weekday := time.Now().Weekday()
 			ac := strconv.Itoa(randomAC(1, 20))
-			response.Reply("Random AC :")
-			response.Reply(ac)
+			attachement := []slack.Block{}
+			attachement = append(attachement, slack.NewContextBlock("1",
+				slack.NewTextBlockObject("mrkdwn", weekday.String()+"'s AC: "+ac, false, false)),
+			)
+			response.Reply("", slacker.WithBlocks(attachement))
 		},
 	}
 
